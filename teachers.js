@@ -7,9 +7,9 @@ const pool = new Pool({
   database: "bootcampx"
 });
 
-const args = process.argv.slice(2);
+const cohortName = `%${process.argv[2]}%`;
 
-const getTeachersThatAssisted = (args, cb) => {
+const getTeachersThatAssisted = (cohortName, cb) => {
   pool
     .query(
       `
@@ -22,10 +22,10 @@ const getTeachersThatAssisted = (args, cb) => {
     JOIN students ON (students.id = student_id)
     JOIN cohorts on (cohorts.id = cohort_id)
   WHERE
-    cohorts.name LIKE '%${args[0]}%'
+    cohorts.name LIKE $1
   ORDER BY
     teacher;
-  `
+  `,[cohortName]
     )
     .then(res => {
       cb(res.rows);
@@ -34,7 +34,7 @@ const getTeachersThatAssisted = (args, cb) => {
     .catch(err => console.error("query error", err.stack));
 };
 
-getTeachersThatAssisted(args, data => {
+getTeachersThatAssisted(cohortName, data => {
   data.forEach(row => {
     console.log(`${row.cohort}: ${row.teacher}`);
   });
